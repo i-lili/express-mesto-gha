@@ -1,10 +1,15 @@
 const Card = require('../models/card');
+const errorHandler = require('../utils/errorHandler');
 
 // GET /cards - возвращает все карточки
 const getCards = (req, res) => {
   Card.find({})
-    .then((cards) => res.send(cards))
-    .catch((err) => res.status(500).send({ message: 'Ошибка на сервере', error: err.message }));
+    .then((cards) => {
+      res.send(cards);
+    })
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 // POST /cards - создаёт карточку
@@ -13,8 +18,12 @@ const createCard = (req, res) => {
   const ownerId = req.user._id;
 
   Card.create({ name, link, owner: ownerId })
-    .then((card) => res.send(card))
-    .catch((err) => res.status(400).send({ message: 'Некорректные данные для создания карточки', error: err.message }));
+    .then((card) => {
+      res.send(card);
+    })
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 // DELETE /cards/:cardId - удаляет карточку по идентификатору
@@ -23,10 +32,15 @@ const deleteCard = (req, res) => {
 
   Card.findByIdAndRemove(cardId)
     .then((card) => {
-      if (card) res.send(card);
-      else res.status(404).send({ message: 'Карточка не найдена' });
+      if (!card) {
+        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
+        return;
+      }
+      res.send(card);
     })
-    .catch((err) => res.status(500).send({ message: 'Ошибка на сервере', error: err.message }));
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 // PUT /cards/:cardId/likes - поставить лайк карточке
@@ -35,8 +49,16 @@ const likeCard = (req, res) => {
   const userId = req.user._id;
 
   Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true })
-    .then((card) => res.send(card))
-    .catch((err) => res.status(500).send({ message: 'Ошибка на сервере', error: err.message }));
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
+        return;
+      }
+      res.send(card);
+    })
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 // DELETE /cards/:cardId/likes - убрать лайк с карточки
@@ -45,8 +67,16 @@ const dislikeCard = (req, res) => {
   const userId = req.user._id;
 
   Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
-    .then((card) => res.send(card))
-    .catch((err) => res.status(500).send({ message: 'Ошибка на сервере', error: err.message }));
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
+        return;
+      }
+      res.send(card);
+    })
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 module.exports = {
