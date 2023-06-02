@@ -15,13 +15,7 @@ const getUsers = (req, res) => {
 // GET /users/:userId - возвращает пользователя по _id
 const getUserById = (req, res) => {
   User.findById(req.params.userId)
-    .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
-        return;
-      }
-      res.send(user);
-    })
+    .then((user) => res.send(user))
     .catch((err) => {
       errorHandler(err, res);
     });
@@ -44,14 +38,8 @@ const updateProfile = (req, res) => {
   const { name, about } = req.body;
   const userId = req.user._id;
 
-  User.findByIdAndUpdate(userId, { name, about }, { new: true })
-    .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
-        return;
-      }
-      res.send(user);
-    })
+  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
+    .then((user) => res.send(user))
     .catch((err) => {
       errorHandler(err, res);
     });
@@ -62,14 +50,8 @@ const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   const userId = req.user._id;
 
-  User.findByIdAndUpdate(userId, { avatar }, { new: true })
-    .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
-        return;
-      }
-      res.send(user);
-    })
+  User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
+    .then((user) => res.send(user))
     .catch((err) => {
       errorHandler(err, res);
     });

@@ -31,13 +31,7 @@ const deleteCard = (req, res) => {
   const { cardId } = req.params;
 
   Card.findByIdAndRemove(cardId)
-    .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
-        return;
-      }
-      res.send(card);
-    })
+    .then((card) => res.send(card))
     .catch((err) => {
       errorHandler(err, res);
     });
@@ -49,13 +43,7 @@ const likeCard = (req, res) => {
   const userId = req.user._id;
 
   Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true })
-    .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
-        return;
-      }
-      res.send(card);
-    })
+    .then((card) => res.send(card))
     .catch((err) => {
       errorHandler(err, res);
     });
@@ -67,13 +55,7 @@ const dislikeCard = (req, res) => {
   const userId = req.user._id;
 
   Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
-    .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
-        return;
-      }
-      res.send(card);
-    })
+    .then((card) => res.send(card))
     .catch((err) => {
       errorHandler(err, res);
     });

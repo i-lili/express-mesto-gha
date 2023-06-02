@@ -1,16 +1,16 @@
 const errorHandler = (err, res) => {
-  let errorCode = 500;
-  let errorMessage = 'Произошла ошибка';
+  let status = 500;
+  let message = 'Произошла ошибка';
 
-  if (err.name === 'ValidationError') {
-    errorCode = 400;
-    errorMessage = 'Переданы некорректные данные';
-  } else if (err.name === 'CastError') {
-    errorCode = 404;
-    errorMessage = 'Запрашиваемый пользователь или карточка не найдены';
+  if (err.name === 'ValidationError' || err.kind === 'ObjectId') {
+    status = 400;
+    message = 'Переданы некорректные данные';
+  } else if (err.message === 'NotFound') {
+    status = 404;
+    message = 'Объект не найден';
   }
 
-  res.status(errorCode).send({ message: errorMessage });
+  res.status(status).send({ message });
 };
 
 module.exports = errorHandler;
