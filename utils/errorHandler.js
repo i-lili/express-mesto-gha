@@ -52,6 +52,7 @@ const handleCustomErrors = (err, req, res) => {
 };
 
 // Главный обработчик ошибок, который вызывает соответствующую функцию в зависимости от типа ошибки
+// eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
   switch (err.name) {
     case 'ValidationError':

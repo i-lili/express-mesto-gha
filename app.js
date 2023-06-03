@@ -29,7 +29,13 @@ app.use((req, res, next) => {
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
-// Обработчик ошибок
+// Обработка неправильного пути
+// eslint-disable-next-line no-unused-vars
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Запрашиваемый ресурс не найден' });
+});
+
+// Обработка ошибок
 app.use(errorHandler);
 
 // Запуск сервера
