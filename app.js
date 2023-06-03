@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
+const errorHandler = require('./utils/errorHandler');
 
 const app = express();
 const port = 3000;
@@ -33,6 +34,9 @@ app.use((req, res, next) => {
 // Использование роутеров
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+
+// Middleware для обработки ошибок
+app.use(errorHandler);
 
 // Запуск сервера
 app.listen(port, () => {

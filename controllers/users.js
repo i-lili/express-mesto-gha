@@ -1,60 +1,57 @@
 const User = require('../models/user');
-const errorHandler = require('../utils/errorHandler');
 
 // GET /users - возвращает всех пользователей
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
       res.send(users);
     })
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch(next);
 };
 
 // GET /users/:userId - возвращает пользователя по _id
-const getUserById = (req, res) => {
-  User.findById(req.params.userId)
-    .then((user) => res.send(user))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+const getUserById = (req, res, next) => {
+  const { userId } = req.params;
+
+  User.findById(userId)
+    .then((user) => {
+      res.send(user);
+    })
+    .catch(next);
 };
 
 // POST /users - создаёт пользователя
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => {
       res.send(user);
     })
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch(next);
 };
 
 // PATCH /users/me - обновляет профиль
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
-    .then((user) => res.send(user))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .then((user) => {
+      res.send(user);
+    })
+    .catch(next);
 };
 
 // PATCH /users/me/avatar - обновляет аватар
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
-    .then((user) => res.send(user))
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .then((user) => {
+      res.send(user);
+    })
+    .catch(next);
 };
 
 module.exports = {
