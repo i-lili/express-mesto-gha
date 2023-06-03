@@ -3,9 +3,7 @@ const Card = require('../models/card');
 // GET /cards - возвращает все карточки
 const getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => {
-      res.send(cards);
-    })
+    .then((cards) => res.send(cards))
     .catch(next);
 };
 
@@ -15,9 +13,7 @@ const createCard = (req, res, next) => {
   const ownerId = req.user._id;
 
   Card.create({ name, link, owner: ownerId })
-    .then((card) => {
-      res.send(card);
-    })
+    .then((card) => res.send(card))
     .catch(next);
 };
 
@@ -27,6 +23,9 @@ const deleteCard = (req, res, next) => {
 
   Card.findByIdAndRemove(cardId)
     .then((card) => {
+      if (!card) {
+        throw new Error('CardNotFound');
+      }
       res.send(card);
     })
     .catch(next);
@@ -39,6 +38,9 @@ const likeCard = (req, res, next) => {
 
   Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true })
     .then((card) => {
+      if (!card) {
+        throw new Error('CardNotFound');
+      }
       res.send(card);
     })
     .catch(next);
@@ -51,6 +53,9 @@ const dislikeCard = (req, res, next) => {
 
   Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
     .then((card) => {
+      if (!card) {
+        throw new Error('CardNotFound');
+      }
       res.send(card);
     })
     .catch(next);

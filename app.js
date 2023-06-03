@@ -11,13 +11,7 @@ const port = 3000;
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('Подключено к MongoDB');
-  })
-  .catch((error) => {
-    console.error('Ошибка при подключении к MongoDB:', error);
-  });
+});
 
 // Использование middleware для разбора JSON
 app.use(express.json());
@@ -35,10 +29,8 @@ app.use((req, res, next) => {
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
-// Middleware для обработки ошибок
+// Обработчик ошибок
 app.use(errorHandler);
 
 // Запуск сервера
-app.listen(port, () => {
-  console.log(`Сервер запущен на порту ${port}`);
-});
+app.listen(port);
