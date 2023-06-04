@@ -1,54 +1,40 @@
+// Константы для статус-кодов
+const STATUS_CODE_BAD_REQUEST = 400; // Некорректный запрос
+const STATUS_CODE_NOT_FOUND = 404; // Ресурс не найден
+const STATUS_CODE_INTERNAL_SERVER_ERROR = 500; // Внутренняя ошибка сервера
+
 // Константы для сообщений об ошибках
 const DEFAULT_ERROR_MESSAGE = 'Внутренняя ошибка сервера';
 const VALIDATION_ERROR_MESSAGE = 'Переданы некорректные данные';
+const INVALID_ID_ERROR_MESSAGE = 'Передан некорректный id';
 const USER_NOT_FOUND_ERROR_MESSAGE = 'Пользователь не найден';
 const CARD_NOT_FOUND_ERROR_MESSAGE = 'Карточка не найдена';
-const INVALID_ID_ERROR_MESSAGE = 'Передан некорректный id';
+const RESOURCE_NOT_FOUND_ERROR_MESSAGE = 'Запрашиваемый ресурс не найден';
 
-// Функция для проверки, является ли строка валидным ObjectId
-const isValidObjectId = (id) => id.match(/^[0-9a-fA-F]{24}$/);
-
-// Функция для определения сообщения об ошибке, если ресурс не найден
-const getNotFoundErrorMessage = (req) => {
-  if (req.originalUrl.startsWith('/users')) {
-    return USER_NOT_FOUND_ERROR_MESSAGE;
-  }
-  if (req.originalUrl.startsWith('/cards')) {
-    return CARD_NOT_FOUND_ERROR_MESSAGE;
-  }
-  return DEFAULT_ERROR_MESSAGE;
+// Маппинг ошибок
+const errorMapping = {
+  UserNotFound: [STATUS_CODE_NOT_FOUND, USER_NOT_FOUND_ERROR_MESSAGE],
+  CardNotFound: [STATUS_CODE_NOT_FOUND, CARD_NOT_FOUND_ERROR_MESSAGE],
+  ResourceNotFound: [STATUS_CODE_NOT_FOUND, RESOURCE_NOT_FOUND_ERROR_MESSAGE],
 };
 
 // Обработка ошибки валидации
 const handleValidationError = (err, req, res) => {
   res
-    .status(400)
+    .status(STATUS_CODE_BAD_REQUEST)
     .json({ message: VALIDATION_ERROR_MESSAGE });
 };
 
 // Обработка ошибки преобразования (CastError)
 const handleCastError = (err, req, res) => {
-  const isObjectIdValid = isValidObjectId(err.value);
-  // Если ObjectId валиден, статус код будет 404, иначе 400
-  const statusCode = isObjectIdValid ? 404 : 400;
-  // Если ObjectId валиден, сообщение об ошибке зависит от типа ресурса,
-  // иначе это сообщение об ошибке некорректного id
-  const message = isObjectIdValid
-    ? getNotFoundErrorMessage(req)
-    : INVALID_ID_ERROR_MESSAGE;
-
-  res.status(statusCode).json({ message });
+  res.status(STATUS_CODE_BAD_REQUEST).json({ message: INVALID_ID_ERROR_MESSAGE });
 };
 
-// Обработка кастомных ошибок, таких как 'UserNotFound' или 'CardNotFound'
+// Обработка кастомных ошибок
 const handleCustomErrors = (err, req, res) => {
-  let message = DEFAULT_ERROR_MESSAGE;
-  if (err.message === 'UserNotFound') {
-    message = USER_NOT_FOUND_ERROR_MESSAGE;
-  } else if (err.message === 'CardNotFound') {
-    message = CARD_NOT_FOUND_ERROR_MESSAGE;
-  }
-  res.status(404).json({ message });
+  const errorInfo = errorMapping[err.message]
+    || [STATUS_CODE_INTERNAL_SERVER_ERROR, DEFAULT_ERROR_MESSAGE];
+  res.status(errorInfo[0]).json({ message: errorInfo[1] });
 };
 
 // Главный обработчик ошибок, который вызывает соответствующую функцию в зависимости от типа ошибки

@@ -32,7 +32,7 @@ app.use('/cards', cardsRouter);
 // Обработка неправильного пути
 // eslint-disable-next-line no-unused-vars
 app.use((req, res, next) => {
-  res.status(404).json({ message: 'Запрашиваемый ресурс не найден' });
+  next(new Error('ResourceNotFound'));
 });
 
 // Обработка ошибок
