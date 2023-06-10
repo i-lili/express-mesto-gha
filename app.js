@@ -1,9 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { login, createUser } = require('./controllers/users'); // Добавить import для login и createUser
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
-const errorHandler = require('./utils/errorHandler');
+const errorHandler = require('./middlewares/errorHandler');
+const auth = require('./middlewares/auth');
 
+// Создание экземпляра приложения express
 const app = express();
 const port = 3000;
 
@@ -16,18 +19,13 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 // Использование middleware для разбора JSON
 app.use(express.json());
 
-// Middleware для добавления id пользователя в объект запроса
-app.use((req, res, next) => {
-  req.user = {
-    _id: '647905569c0c2773598bc9d7',
-  };
-
-  next();
-});
+// Обработчики для '/signin' и '/signup'
+app.post('/signin', login);
+app.post('/signup', createUser);
 
 // Использование роутеров
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
+app.use('/users', auth, usersRouter);
+app.use('/cards', auth, cardsRouter);
 
 // Обработка неправильного пути
 // eslint-disable-next-line no-unused-vars

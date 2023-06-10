@@ -9,13 +9,13 @@ router.get('/', usersController.getUsers);
 // GET /users/:userId
 router.get('/:userId', usersController.getUserById);
 
-// POST /users
-router.post('/', usersController.createUser);
+// POST /user
+router.get('/me', usersController.getCurrentUser);
 
 // PATCH /users/me
-router.patch('/:userId', usersController.updateProfile);
+router.patch('/me', usersController.updateProfile);
 
 // PATCH /users/me/avatar
-router.patch('/:userId/avatar', usersController.updateAvatar);
+router.patch('/me/avatar', usersController.updateAvatar);
 
 module.exports = router;

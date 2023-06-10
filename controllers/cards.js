@@ -20,14 +20,19 @@ const createCard = (req, res, next) => {
 // DELETE /cards/:cardId - удаляет карточку по идентификатору
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
+  const userId = req.user._id;
 
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
     .then((card) => {
       if (!card) {
         throw new Error('CardNotFound');
       }
-      res.send(card);
+      if (!card.owner.equals(userId)) {
+        throw new Error('Forbidden');
+      }
+      return Card.deleteOne(card);
     })
+    .then((card) => res.send(card))
     .catch(next);
 };
 

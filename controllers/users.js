@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
 // GET /users - возвращает всех пользователей
@@ -21,12 +23,79 @@ const getUserById = (req, res, next) => {
     .catch(next);
 };
 
-// POST /users - создаёт пользователя
-const createUser = (req, res, next) => {
-  const { name, about, avatar } = req.body;
+// GET /users/me - возвращает информацию о текущем пользователе
+const getCurrentUser = (req, res, next) => {
+  const userId = req.user._id;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send(user))
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        throw new Error('UserNotFound');
+      }
+      res.send(user);
+    })
+    .catch(next);
+};
+
+// POST /signup - создаёт пользователя
+const createUser = (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        throw new Error('EmailAlreadyExists');
+      }
+      return bcrypt.hash(password, 10);
+    })
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+    .then((user) => res.send({
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+    }))
+    .catch(next);
+};
+
+// POST /signin - авторизация пользователя
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        throw new Error('InvalidCredentials');
+      }
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new Error('InvalidCredentials');
+          }
+          return user;
+        });
+    })
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+      res.cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: true,
+      });
+      res.send({ token });
+    })
     .catch(next);
 };
 
@@ -63,7 +132,9 @@ const updateAvatar = (req, res, next) => {
 module.exports = {
   getUsers,
   getUserById,
+  getCurrentUser,
   createUser,
   updateProfile,
   updateAvatar,
+  login,
 };
