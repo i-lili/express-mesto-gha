@@ -6,11 +6,11 @@ const router = express.Router();
 // GET /users
 router.get('/', usersController.getUsers);
 
+// GET /users/me
+router.get('/me', usersController.getCurrentUser);
+
 // GET /users/:userId
 router.get('/:userId', usersController.getUserById);
-
-// POST /user
-router.get('/me', usersController.getCurrentUser);
 
 // PATCH /users/me
 router.patch('/me', usersController.updateProfile);

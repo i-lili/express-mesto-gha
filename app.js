@@ -28,7 +28,6 @@ app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
 
 // Обработка неправильного пути
-// eslint-disable-next-line no-unused-vars
 app.use((req, res, next) => {
   next(new Error('ResourceNotFound'));
 });

@@ -1,3 +1,4 @@
+const Joi = require('joi');
 const Card = require('../models/card');
 
 // GET /cards - возвращает все карточки
@@ -9,6 +10,17 @@ const getCards = (req, res, next) => {
 
 // POST /cards - создаёт карточку
 const createCard = (req, res, next) => {
+  const schema = Joi.object({
+    name: Joi.string().min(2).max(30).required(),
+    link: Joi.string().uri().required(),
+  });
+
+  const validationResult = schema.validate(req.body);
+
+  if (validationResult.error) {
+    throw new Error('ValidationError');
+  }
+
   const { name, link } = req.body;
   const ownerId = req.user._id;
 
@@ -36,7 +48,7 @@ const deleteCard = (req, res, next) => {
     .catch(next);
 };
 
-// PUT /cards/:cardId/likes - поставить лайк карточке
+// PUT /cards/:cardId/likes - ставит лайк карточке
 const likeCard = (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
@@ -51,7 +63,7 @@ const likeCard = (req, res, next) => {
     .catch(next);
 };
 
-// DELETE /cards/:cardId/likes - убрать лайк с карточ
+// DELETE /cards/:cardId/likes - убирает лайк с карточки
 const dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;

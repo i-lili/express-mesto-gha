@@ -1,3 +1,4 @@
+const Joi = require('joi');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
@@ -39,6 +40,20 @@ const getCurrentUser = (req, res, next) => {
 
 // POST /signup - создаёт пользователя
 const createUser = (req, res, next) => {
+  const schema = Joi.object({
+    name: Joi.string().min(2).max(30).required(),
+    about: Joi.string().min(2).max(30).required(),
+    avatar: Joi.string().uri().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).required(),
+  });
+
+  const validationResult = schema.validate(req.body);
+
+  if (validationResult.error) {
+    throw new Error('ValidationError');
+  }
+
   const {
     name,
     about,
@@ -46,6 +61,10 @@ const createUser = (req, res, next) => {
     email,
     password,
   } = req.body;
+
+  if (!password) {
+    throw new Error('ValidationError');
+  }
 
   User.findOne({ email })
     .then((user) => {
@@ -73,6 +92,10 @@ const createUser = (req, res, next) => {
 // POST /signin - авторизация пользователя
 const login = (req, res, next) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new Error('ValidationError');
+  }
 
   User.findOne({ email }).select('+password')
     .then((user) => {
