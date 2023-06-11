@@ -37,7 +37,8 @@ const errorMapping = {
 
 // Обработчик ошибок валидации
 const handleValidationError = (err, req, res) => {
-  res.status(STATUS_CODES.BAD_REQUEST).json({ message: ERROR_MESSAGES.VALIDATION });
+  const details = err.details.map((detail) => detail.message).join(', ');
+  res.status(STATUS_CODES.BAD_REQUEST).json({ message: `${ERROR_MESSAGES.VALIDATION}: ${details}` });
 };
 
 // Обработчик ошибок преобразования (CastError)

@@ -18,7 +18,8 @@ const createCard = (req, res, next) => {
   const validationResult = schema.validate(req.body);
 
   if (validationResult.error) {
-    throw new Error('ValidationError');
+    next(validationResult.error);
+    return;
   }
 
   const { name, link } = req.body;

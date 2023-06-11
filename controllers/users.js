@@ -41,9 +41,9 @@ const getCurrentUser = (req, res, next) => {
 // POST /signup - создаёт пользователя
 const createUser = (req, res, next) => {
   const schema = Joi.object({
-    name: Joi.string().min(2).max(30).required(),
-    about: Joi.string().min(2).max(30).required(),
-    avatar: Joi.string().uri().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().uri(),
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
   });
@@ -51,7 +51,8 @@ const createUser = (req, res, next) => {
   const validationResult = schema.validate(req.body);
 
   if (validationResult.error) {
-    throw new Error('ValidationError');
+    next(validationResult.error);
+    return;
   }
 
   const {
@@ -61,10 +62,6 @@ const createUser = (req, res, next) => {
     email,
     password,
   } = req.body;
-
-  if (!password) {
-    throw new Error('ValidationError');
-  }
 
   User.findOne({ email })
     .then((user) => {
@@ -93,19 +90,27 @@ const createUser = (req, res, next) => {
 const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    throw new Error('ValidationError');
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).required(),
+  });
+
+  const validationResult = schema.validate(req.body);
+
+  if (validationResult.error) {
+    next(validationResult.error);
+    return;
   }
 
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new Error('InvalidCredentials');
+        throw new Error('ValidationError');
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new Error('InvalidCredentials');
+            throw new Error('ValidationError');
           }
           return user;
         });
