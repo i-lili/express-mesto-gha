@@ -1,7 +1,7 @@
-const Joi = require('joi');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
+const { userSchema, loginSchema } = require('../middlewares/schemas');
 
 // GET /users - возвращает всех пользователей
 const getUsers = (req, res, next) => {
@@ -40,18 +40,11 @@ const getCurrentUser = (req, res, next) => {
 
 // POST /signup - создаёт пользователя
 const createUser = (req, res, next) => {
-  const schema = Joi.object({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().uri(),
-    email: Joi.string().email().required(),
-    password: Joi.string().min(8).required(),
-  });
+  const { error } = userSchema.validate(req.body);
 
-  const validationResult = schema.validate(req.body);
-
-  if (validationResult.error) {
-    throw new Error('ValidationError');
+  if (error) {
+    next(error);
+    return;
   }
 
   const {
@@ -91,18 +84,11 @@ const createUser = (req, res, next) => {
 
 // POST /signin - авторизация пользователя
 const login = (req, res, next) => {
-  // Определите схему валидации Joi
-  const schema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().min(8).required(),
-  });
+  const { error } = loginSchema.validate(req.body);
 
-  // Валидируйте данные запроса
-  const validationResult = schema.validate(req.body);
-
-  // Если ошибка валидации, бросьте исключение
-  if (validationResult.error) {
-    throw new Error('ValidationError');
+  if (error) {
+    next(error);
+    return;
   }
 
   const { email, password } = req.body;
@@ -110,12 +96,12 @@ const login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new Error('ValidationError');
+        throw new Error('InvalidCredentials');
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new Error('ValidationError');
+            throw new Error('InvalidCredentials');
           }
           return user;
         });

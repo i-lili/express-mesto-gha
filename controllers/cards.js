@@ -1,5 +1,5 @@
-const Joi = require('joi');
 const Card = require('../models/card');
+const { cardSchema } = require('../middlewares/schemas');
 
 // GET /cards - возвращает все карточки
 const getCards = (req, res, next) => {
@@ -10,21 +10,17 @@ const getCards = (req, res, next) => {
 
 // POST /cards - создаёт карточку
 const createCard = (req, res, next) => {
-  const schema = Joi.object({
-    name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().uri().required(),
-  });
+  const { error } = cardSchema.validate(req.body);
 
-  const validationResult = schema.validate(req.body);
-
-  if (validationResult.error) {
-    throw new Error('ValidationError');
+  if (error) {
+    next(error);
+    return;
   }
 
   const { name, link } = req.body;
-  const ownerId = req.user._id;
+  const owner = req.user._id;
 
-  Card.create({ name, link, owner: ownerId })
+  Card.create({ name, link, owner })
     .then((card) => res.send(card))
     .catch(next);
 };
