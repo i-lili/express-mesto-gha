@@ -51,8 +51,7 @@ const createUser = (req, res, next) => {
   const validationResult = schema.validate(req.body);
 
   if (validationResult.error) {
-    next(validationResult.error);
-    return;
+    throw new Error('ValidationError');
   }
 
   const {
@@ -62,6 +61,10 @@ const createUser = (req, res, next) => {
     email,
     password,
   } = req.body;
+
+  if (!password) {
+    throw new Error('ValidationError');
+  }
 
   User.findOne({ email })
     .then((user) => {
@@ -88,19 +91,21 @@ const createUser = (req, res, next) => {
 
 // POST /signin - авторизация пользователя
 const login = (req, res, next) => {
-  const { email, password } = req.body;
-
+  // Определите схему валидации Joi
   const schema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
   });
 
+  // Валидируйте данные запроса
   const validationResult = schema.validate(req.body);
 
+  // Если ошибка валидации, бросьте исключение
   if (validationResult.error) {
-    next(validationResult.error);
-    return;
+    throw new Error('ValidationError');
   }
+
+  const { email, password } = req.body;
 
   User.findOne({ email }).select('+password')
     .then((user) => {
