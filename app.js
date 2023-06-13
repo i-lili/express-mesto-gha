@@ -1,10 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { login, createUser } = require('./controllers/users'); // Добавить import для login и createUser
+const { errors } = require('celebrate');
+const { login, createUser } = require('./controllers/users');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const errorHandler = require('./middlewares/errorHandler');
 const auth = require('./middlewares/auth');
+const { validateUser, validateLogin } = require('./middlewares/validation');
 
 // Создание экземпляра приложения express
 const app = express();
@@ -19,11 +21,11 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 // Использование middleware для разбора JSON
 app.use(express.json());
 
-// Обработчики для '/signin' и '/signup'
-app.post('/signin', login);
-app.post('/signup', createUser);
+// Обработчики для '/signin' и '/signup' с валидацией
+app.post('/signin', validateLogin, login);
+app.post('/signup', validateUser, createUser);
 
-// Использование роутеров
+// Использование роутеров с промежуточным ПО авторизации
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
 
@@ -31,6 +33,9 @@ app.use('/cards', auth, cardsRouter);
 app.use((req, res, next) => {
   next(new Error('ResourceNotFound'));
 });
+
+// Включение обработчика ошибок Celebrate перед обработчиком ошибок
+app.use(errors());
 
 // Обработка ошибок
 app.use(errorHandler);

@@ -1,3 +1,4 @@
+const Joi = require('joi');
 // Определяем константы для HTTP-статусов
 const STATUS_CODES = {
   BAD_REQUEST: 400,
@@ -41,7 +42,7 @@ const handleValidationError = (err, req, res) => {
   res.status(STATUS_CODES.BAD_REQUEST).json({ message: ERROR_MESSAGES.VALIDATION, errors });
 };
 
-// Обработчик ошибок преобразования (CastError)
+// Обработчик ошибок преобразования
 const handleCastError = (err, req, res) => {
   res.status(STATUS_CODES.BAD_REQUEST).json({ message: ERROR_MESSAGES.INVALID_ID });
 };
@@ -55,17 +56,13 @@ const handleCustomErrors = (err, req, res) => {
 // Главный обработчик ошибок, выбирает подходящую функцию обработки в зависимости от типа ошибки
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
-  switch (err.name) {
-    case 'ValidationError':
-      handleValidationError(err, req, res);
-      break;
-    case 'CastError':
-      handleCastError(err, req, res);
-      break;
-    default:
-      handleCustomErrors(err, req, res);
+  if (err instanceof Joi.ValidationError) {
+    handleValidationError(err, req, res);
+  } else if (err.name === 'CastError') {
+    handleCastError(err, req, res);
+  } else {
+    handleCustomErrors(err, req, res);
   }
 };
 
-// Экспорт обработчика ошибок
 module.exports = errorHandler;

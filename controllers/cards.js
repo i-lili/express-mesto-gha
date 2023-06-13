@@ -1,5 +1,4 @@
 const Card = require('../models/card');
-const { cardSchema } = require('../middlewares/schemas');
 
 // GET /cards - возвращает все карточки
 const getCards = (req, res, next) => {
@@ -10,13 +9,6 @@ const getCards = (req, res, next) => {
 
 // POST /cards - создаёт карточку
 const createCard = (req, res, next) => {
-  const { error } = cardSchema.validate(req.body);
-
-  if (error) {
-    next(error);
-    return;
-  }
-
   const { name, link } = req.body;
   const owner = req.user._id;
 

@@ -1,21 +1,33 @@
 const express = require('express');
 const usersController = require('../controllers/users');
+const {
+  validateUserUpdate,
+  validateAvatarUpdate,
+  validateUser,
+  validateLogin,
+} = require('../middlewares/validation');
 
 const router = express.Router();
 
-// GET /users
+// GET /users - возвращает всех пользователей
 router.get('/', usersController.getUsers);
 
-// GET /users/me
+// GET /users/me - возвращает информацию о текущем пользователе
 router.get('/me', usersController.getCurrentUser);
 
-// GET /users/:userId
+// GET /users/:userId - возвращает пользователя по _id
 router.get('/:userId', usersController.getUserById);
 
-// PATCH /users/me
-router.patch('/me', usersController.updateProfile);
+// POST /signup - создаёт пользователя
+router.post('/signup', validateUser, usersController.createUser);
 
-// PATCH /users/me/avatar
-router.patch('/me/avatar', usersController.updateAvatar);
+// POST /signin - авторизация пользователя
+router.post('/signin', validateLogin, usersController.login);
+
+// PATCH /users/me - обновить профиль
+router.patch('/me', validateUserUpdate, usersController.updateProfile);
+
+// PATCH /users/me/avatar - обновить аватар
+router.patch('/me/avatar', validateAvatarUpdate, usersController.updateAvatar);
 
 module.exports = router;

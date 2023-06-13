@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
-const { userSchema, loginSchema } = require('../middlewares/schemas');
 
 // GET /users - возвращает всех пользователей
 const getUsers = (req, res, next) => {
@@ -40,13 +39,6 @@ const getCurrentUser = (req, res, next) => {
 
 // POST /signup - создаёт пользователя
 const createUser = (req, res, next) => {
-  const { error } = userSchema.validate(req.body);
-
-  if (error) {
-    next(error);
-    return;
-  }
-
   const {
     name,
     about,
@@ -54,10 +46,6 @@ const createUser = (req, res, next) => {
     email,
     password,
   } = req.body;
-
-  if (!password) {
-    throw new Error('ValidationError');
-  }
 
   User.findOne({ email })
     .then((user) => {
@@ -84,13 +72,6 @@ const createUser = (req, res, next) => {
 
 // POST /signin - авторизация пользователя
 const login = (req, res, next) => {
-  const { error } = loginSchema.validate(req.body);
-
-  if (error) {
-    next(error);
-    return;
-  }
-
   const { email, password } = req.body;
 
   User.findOne({ email }).select('+password')
@@ -121,6 +102,7 @@ const login = (req, res, next) => {
 // PATCH /users/me - обновляет профиль
 const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
+
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
@@ -136,6 +118,7 @@ const updateProfile = (req, res, next) => {
 // PATCH /users/me/avatar - обновляет аватар
 const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
+
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
