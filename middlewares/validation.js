@@ -55,6 +55,13 @@ const validateAvatarUpdate = celebrate({
   }),
 });
 
+// Валидация идентификатора пользователя
+const validateUserId = celebrate({
+  [Segments.PARAMS]: Joi.object().keys({
+    userId: Joi.string().length(24).hex(),
+  }),
+});
+
 module.exports = {
   validateUser,
   validateLogin,
@@ -62,4 +69,5 @@ module.exports = {
   validateCardId,
   validateUserUpdate,
   validateAvatarUpdate,
+  validateUserId,
 };

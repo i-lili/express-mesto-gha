@@ -5,6 +5,7 @@ const {
   validateAvatarUpdate,
   validateUser,
   validateLogin,
+  validateUserId,
 } = require('../middlewares/validation');
 
 const router = express.Router();
@@ -16,7 +17,7 @@ router.get('/', usersController.getUsers);
 router.get('/me', usersController.getCurrentUser);
 
 // GET /users/:userId - возвращает пользователя по _id
-router.get('/:userId', usersController.getUserById);
+router.get('/:userId', validateUserId, usersController.getUserById);
 
 // POST /signup - создаёт пользователя
 router.post('/signup', validateUser, usersController.createUser);
