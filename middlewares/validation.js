@@ -1,14 +1,19 @@
 const { celebrate, Joi, Segments } = require('celebrate');
+const validator = require('validator');
+
+const validateURL = (value, helpers) => {
+  if (!validator.isURL(value, { require_protocol: true })) {
+    return helpers.message('Неправильный формат ссылки');
+  }
+  return value;
+};
 
 // Схема валидации данных пользователя
 const validateUser = celebrate({
   [Segments.BODY]: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().uri({
-      scheme: ['http', 'https'],
-      allowRelative: false,
-    }),
+    avatar: Joi.string().custom(validateURL),
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
   }),
@@ -26,7 +31,7 @@ const validateLogin = celebrate({
 const validateCard = celebrate({
   [Segments.BODY]: Joi.object().keys({
     name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().uri({ scheme: ['http', 'https'] }).required(),
+    link: Joi.string().custom(validateURL).required(),
   }),
 });
 
@@ -48,10 +53,7 @@ const validateUserUpdate = celebrate({
 // Схема валидации обновления аватара пользователя
 const validateAvatarUpdate = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    avatar: Joi.string().uri({
-      scheme: ['http', 'https'],
-      allowRelative: false,
-    }),
+    avatar: Joi.string().custom(validateURL),
   }),
 });
 

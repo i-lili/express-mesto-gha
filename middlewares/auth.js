@@ -1,30 +1,26 @@
 const jwt = require('jsonwebtoken');
 
-// Экспортируем middleware для проверки авторизации пользователя
 module.exports = (req, res, next) => {
-  // Извлекаем заголовок авторизации
-  const { authorization } = req.headers;
+  // Извлекаем токен из cookies запроса
+  const token = req.cookies.jwt;
 
-  // Проверяем наличие и формат заголовка
-  if (!authorization || !authorization.startsWith('Bearer ')) {
+  // Проверяем, существует ли токен
+  if (!token) {
     throw new Error('AuthorizationRequired');
   }
 
-  // Удаляем "Bearer " из заголовка, чтобы получить токен
-  const token = authorization.replace('Bearer ', '');
-
   let payload;
 
-  // Верифицируем токен
   try {
+    // Пытаемся верифицировать токен с помощью секретного ключа
+    // Если токен корректный, функция вернет "payload" (данные, закодированные в токене)
     payload = jwt.verify(token, 'secret-key');
   } catch (err) {
     throw new Error('AuthorizationRequired');
   }
 
-  // Если верификация прошла успешно, добавляем payload в запрос
+  // Добавляем payload из токена в объект запроса, чтобы он был доступен в последующих обработчиках
   req.user = payload;
 
-  // Передаём обработку запроса дальше
   next();
 };
