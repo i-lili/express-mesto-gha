@@ -1,7 +1,11 @@
 const Card = require('../models/card');
-const { NotFoundError, ForbiddenError, BadRequestError } = require('../errors/Errors');
 
-// GET /cards - возвращает все карточки
+const {
+  NotFoundError,
+  ForbiddenError,
+  BadRequestError,
+} = require('../errors/Errors');
+
 const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({});
@@ -11,7 +15,6 @@ const getCards = async (req, res, next) => {
   }
 };
 
-// POST /cards - создаёт карточку
 const createCard = async (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
@@ -21,14 +24,13 @@ const createCard = async (req, res, next) => {
     res.send(card);
   } catch (error) {
     if (error.name === 'ValidationError') {
-      next(new BadRequestError('Некорректные данные при создании карточки'));
+      next(new BadRequestError(error.message));
     } else {
       next(error);
     }
   }
 };
 
-// DELETE /cards/:cardId - удаляет карточку по идентификатору
 const deleteCard = async (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
@@ -39,18 +41,18 @@ const deleteCard = async (req, res, next) => {
     if (!card) {
       throw new NotFoundError('Карточка не найдена');
     }
+
     if (!card.owner.equals(userId)) {
-      throw new ForbiddenError('Недостаточно прав для удаления карточки');
+      throw new ForbiddenError('Нельзя удалять чужие карточки');
     }
 
-    const deletedCard = await Card.deleteOne(card);
-    res.send(deletedCard);
+    await Card.deleteOne(card);
+    res.send(card);
   } catch (error) {
     next(error);
   }
 };
 
-// PUT /cards/:cardId/likes - ставит лайк карточке
 const likeCard = async (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
@@ -59,7 +61,7 @@ const likeCard = async (req, res, next) => {
     const card = await Card.findByIdAndUpdate(
       cardId,
       { $addToSet: { likes: userId } },
-      { new: true }
+      { new: true },
     );
 
     if (!card) {
@@ -72,7 +74,6 @@ const likeCard = async (req, res, next) => {
   }
 };
 
-// DELETE /cards/:cardId/likes - убирает лайк с карточки
 const dislikeCard = async (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;

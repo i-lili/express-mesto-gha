@@ -1,26 +1,19 @@
 const jwt = require('jsonwebtoken');
+const { UnauthorizedError } = require('../errors/Errors');
 
-module.exports = (req, res, next) => {
-  // Извлекаем токен из cookies запроса
-  const token = req.cookies.jwt;
-
-  // Проверяем, существует ли токен
-  if (!token) {
-    throw new Error('AuthorizationRequired');
-  }
-
-  let payload;
-
+module.exports = async (req, res, next) => {
   try {
-    // Пытаемся верифицировать токен с помощью секретного ключа
-    // Если токен корректный, функция вернет "payload" (данные, закодированные в токене)
-    payload = jwt.verify(token, 'secret-key');
+    const token = req.cookies.jwt;
+
+    if (!token) {
+      throw new UnauthorizedError('Authorization required');
+    }
+
+    const payload = await jwt.verify(token, 'secret-key');
+
+    req.user = payload;
+    next();
   } catch (err) {
-    throw new Error('AuthorizationRequired');
+    next(err);
   }
-
-  // Добавляем payload из токена в объект запроса, чтобы он был доступен в последующих обработчиках
-  req.user = payload;
-
-  next();
 };

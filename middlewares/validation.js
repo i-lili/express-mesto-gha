@@ -1,6 +1,7 @@
 const { celebrate, Joi, Segments } = require('celebrate');
 const validator = require('validator');
 
+// Валидация URL
 const validateURL = (value, helpers) => {
   if (!validator.isURL(value, { require_protocol: true })) {
     return helpers.message('Неправильный формат ссылки');
