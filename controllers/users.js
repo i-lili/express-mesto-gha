@@ -52,10 +52,6 @@ const createUser = async (req, res, next) => {
       email,
       password,
     } = req.body;
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      throw new ConflictError('Пользователь с таким email уже существует');
-    }
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({
       name,
@@ -71,26 +67,15 @@ const createUser = async (req, res, next) => {
       email: user.email,
     });
   } catch (error) {
-    if (error.name === 'ValidationError') {
+    if (error.code === 11000) {
+      next(new ConflictError('Пользователь с таким email уже существует'));
+    } else if (error.name === 'ValidationError') {
       next(new BadRequestError(error.message));
     } else {
       next(error);
     }
   }
 };
-
-// Пытаюсь обработать ошибку с кодом 11000 и не получается ее поймать.
-// С чем это может быть связано?
-// } catch (error) {
-//  if (error.code === 11000) {
-//   next(new ConflictError('Пользователь с таким email уже существует'));
-//  } else if (error.name === 'ValidationError') {
-//    next(new BadRequestError(error.message));
-//  } else {
-//   next(error);
-//  }
-// }
-// };
 
 const login = async (req, res, next) => {
   try {
