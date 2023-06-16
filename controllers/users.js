@@ -79,6 +79,19 @@ const createUser = async (req, res, next) => {
   }
 };
 
+// Пытаюсь обработать ошибку с кодом 11000 и не получается ее поймать.
+// С чем это может быть связано?
+// } catch (error) {
+//  if (error.code === 11000) {
+//   next(new ConflictError('Пользователь с таким email уже существует'));
+//  } else if (error.name === 'ValidationError') {
+//    next(new BadRequestError(error.message));
+//  } else {
+//   next(error);
+//  }
+// }
+// };
+
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
